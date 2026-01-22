@@ -1,6 +1,5 @@
 import pandas as pd
-# from utils.api_ouput import qianduoduo_api_output
-# from utils.api_ouput import nvidia_api_output
+
 from utils.api_ouput import deepseek_api_output
 import json
 import os
@@ -16,9 +15,9 @@ meaning_dict={'HUFL':'High UseFul Load',
 
 def ETTh_main_one_shot_reasoning(data_name,attr,look_back,pred_window,number,api_key,temperature,top_p):
 
-    data_dir = '/data/songliv/TS/datasets/Single-mode/' + data_name + '.csv'
+    data_dir = ''
     data = pd.read_csv(data_dir)
-    # 取前12个月的数据 (假设每小时一个数据点，12个月 = 12 * 30 * 24)
+
     data = data[12 * 30 * 24 + 4 * 30 * 24 - look_back : 12 * 30 * 24 + 8 * 30 * 24]
     date = data.loc[:, 'date'].to_numpy()
     attr_data = data.loc[:, attr].to_numpy()
@@ -26,7 +25,7 @@ def ETTh_main_one_shot_reasoning(data_name,attr,look_back,pred_window,number,api
     data[attr] = attr_data
     data_lookback = []
     for i in range(118):
-        data_lookback.append(data.iloc[i * look_back:(i + 1) * look_back])  # 使用 iloc 进行索引
+        data_lookback.append(data.iloc[i * look_back:(i + 1) * look_back])  
 
 
     prompt='You are an expert in time series forecasting.'
@@ -36,7 +35,6 @@ def ETTh_main_one_shot_reasoning(data_name,attr,look_back,pred_window,number,api
     prompt +='But please note that these data will have missing values, so be aware of that. '
     prompt +=f'Please give me the complete data for the next {pred_window} recorded dates, remember to give me the complete data.'
     prompt +='You must provide the complete data.You mustn\'t omit any content. '
-    # prompt +='Think step by step: analyze trend, then forecast. The data is as follows:'
     prompt += data_lookback[number].to_string(index=False)
     prompt +='And your final answer must follow the format'
     prompt+="""

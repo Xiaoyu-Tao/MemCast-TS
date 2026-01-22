@@ -1,3 +1,0 @@
-{
-  "error": "Error code: 500 - {'error': {'message': 'upstream error: do request failed (request id: 20251016092428410982240g5QactG)', 'type': 'new_api_error', 'param': '', 'code': 'do_request_failed'}}"
-}
