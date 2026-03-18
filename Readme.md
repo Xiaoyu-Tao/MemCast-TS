@@ -12,14 +12,27 @@
 
 </div>
 
----
-
 MemCast is a novel framework that reformulates **Time Series Forecasting (TSF)** as an **experience-conditioned reasoning task**. It explicitly accumulates forecasting experience into a hierarchical memory and leverages it to guide the inference process of Large Language Models (LLMs).
 
 > 📝 “MemCast: Memory-Driven Time Series Forecasting with Experience-Conditioned Reasoning”  
 > **Preprint** | [📄 Paper](https://arxiv.org/abs/2602.03164)
 
 ---
+
+> 🙋 Please let us know if you find out a mistake or have any suggestions!
+> 
+> 🌟 If you find this resource helpful, please consider starring this repository and citing our research.
+
+## Citation
+
+```bibtex
+@article{tao2026memcast,
+  title={MemCast: Memory-Driven Time Series Forecasting with Experience-Conditioned Reasoning},
+  author={Tao, Xiaoyu and Cheng, Mingyue and Guo, Ze and Yu, Shuo and Liu, Yaguo and Liu, Qi and Wang, Shijin},
+  journal={arXiv preprint arXiv:2602.03164},
+  year={2026}
+}
+```
 
 ## 🔍 Overview
 
@@ -103,3 +116,7 @@ Overall Performance: MemCast consistently achieves the best or second-best resul
   <img src="assets/4.png" width="48%">
 </p>
 Ablation Study: Validation of memory components and dynamic adaptation strategy.
+
+
+
+
