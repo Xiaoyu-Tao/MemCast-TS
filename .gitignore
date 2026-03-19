@@ -4,3 +4,4 @@ Experiments/
 Backup/
 output*/
 .env
+.claude/
