@@ -10,15 +10,9 @@ import time
 import numpy as np
 
 meaning_dict = {
-    'HUFL': 'High Useful Load (high-frequency component of useful electrical load)',
-    'HULL': 'High UnUseful Load (high-frequency component of non-useful electrical load)',
-    'MUFL': 'Medium Useful Load (medium-frequency component of useful electrical load)',
-    'MULL': 'Medium UnUseful Load (medium-frequency component of non-useful electrical load)',
-    'LUFL': 'Low Useful Load (low-frequency component of useful electrical load)',
-    'LULL': 'Low UnUseful Load (low-frequency component of non-useful electrical load)',
-    'OT': 'Oil Temperature (transformer oil temperature, prediction target)',
-    'tmax': 'Daily maximum temperature',
-    'tmin': 'Daily minimum temperature'
+    'Grid load forecast': 'Forecasted grid electricity load in the Nord Pool system (MW)',
+    'Wind power forecast': 'Forecasted wind power generation in the Nord Pool system (MW)',
+    'OT': 'Observed Nord Pool electricity price (€/MWh, 1-hour resolution)'
 }
 
 def extract_time_series_features(series):
@@ -88,7 +82,7 @@ def extract_time_series_features(series):
 
 
 def _summary_dir_for(data_name):
-    return os.path.join("Memory", "cases", "ETTh", "summary_outputs", data_name)
+    return os.path.join("Memory", "cases", "EPF", "summary_outputs", data_name)
 
 
 def _summary_path(data_name, attr, look_back, pred_window, index):
@@ -434,7 +428,7 @@ def _quick_quality_check(answer_text, pred_window, historical_values, volatility
     return True, "QC passed: forecast format and length look good.", parsed, metrics
 
 
-def ETTh_main_one_shot_reasoning_see(
+def EPF_main_one_shot_reasoning_see(
     data_name,
     attr,
     look_back,
@@ -482,15 +476,9 @@ def ETTh_main_one_shot_reasoning_see(
     
     # 获取所有三个变量的列名映射（原始名称 -> 实际列名）
     all_attrs_dict = {
-        'HUFL': 'HUFL',
-        'HULL': 'HULL',
-        'MUFL': 'MUFL',
-        'MULL': 'MULL',
-        'LUFL': 'LUFL',
-        'LULL': 'LULL',
-        'OT': 'OT',
-        'tmax': 'tmax',
-        'tmin': 'tmin'
+        'Grid load forecast': 'Grid load forecast',
+        'Wind power forecast': 'Wind power forecast',
+        'OT': 'OT'
     }
     
     # 检查并修正列名映射
@@ -513,7 +501,7 @@ def ETTh_main_one_shot_reasoning_see(
     else:
         attr_col = attr
     
-    image_path = f'./Memory/visual/image/ETTh/{data_name}/memory/{data_name}_visualization_{number:03d}.png'
+    image_path = f'./Memory/visual/image/EPF/{data_name}/memory/{data_name}_visualization_{number:03d}.png'
     meta_path = image_path.replace('.png', '.json')
     selected_covs = []
     if os.path.exists(meta_path):
@@ -526,7 +514,7 @@ def ETTh_main_one_shot_reasoning_see(
         except:
             selected_covs = []
     if not selected_covs:
-        fallback = [k for k in ['tmax', 'tmin', 'HUFL', 'HULL', 'MUFL', 'MULL', 'LUFL', 'LULL'] if k in data.columns and k != original_attr]
+        fallback = [k for k in ['Grid load forecast', 'Wind power forecast', 'OT'] if k in data.columns and k != original_attr]
         selected_covs = fallback[:2] if fallback else []
     covariates = {k: all_attrs_dict.get(k, k) for k in selected_covs if all_attrs_dict.get(k, k) in data.columns}
     
@@ -584,7 +572,7 @@ def ETTh_main_one_shot_reasoning_see(
 
     # 尝试加载视觉分析的推理结果（如果存在）
     vision_analysis = None
-    vision_result_path_etth = f'Memory/visual/analysis/ETTh/{data_name}/memory/result_{attr}_{data_name}_{look_back}_{pred_window}_{number}.json'
+    vision_result_path_etth = f'Memory/visual/analysis/EPF/{data_name}/memory/result_{attr}_{data_name}_{look_back}_{pred_window}_{number}.json'
     chosen_vision_path = vision_result_path_etth
     if os.path.exists(chosen_vision_path):
         try:
@@ -603,10 +591,7 @@ def ETTh_main_one_shot_reasoning_see(
         print(f"Vision analysis file not found: {chosen_vision_path}")
 
     prompt = ''
-    if any(k in covariates for k in ['tmax', 'tmin']):
-        prompt += ' The dataset is ETTh1 (Electricity Transformer Temperature Hourly) and contains hourly records of transformer oil temperature (target), load-related covariates (HUFL, HULL, MUFL, MULL, LUFL, LULL), and weather covariates (tmax, tmin).'
-    else:
-        prompt += ' The dataset is ETTh1 (Electricity Transformer Temperature Hourly) and contains hourly records of transformer oil temperature (target) and load-related covariates (HUFL, HULL, MUFL, MULL, LUFL, LULL).'
+    prompt += ' The dataset comes from the Nord Pool electricity market and contains hourly records of grid load forecasts, wind power forecasts, and observed electricity prices.'
     prompt += f'\n\n**Target Variable to Forecast:**\n'
     prompt += f'Here is the historical data of {meaning_dict.get(original_attr, original_attr)} (the variable you need to forecast) for the past {look_back} recorded hours:\n'
     prompt += target_data.to_string(index=False)
@@ -618,7 +603,7 @@ def ETTh_main_one_shot_reasoning_see(
         for cov_key in covariates.keys():
             cov_meanings_list.append(f"{cov_key}: {meaning_dict.get(cov_key, cov_key)}")
         prompt += 'I also provide the following covariates (auxiliary variables) that may help with forecasting. '
-        prompt += f'These covariates represent different frequency components of electrical load and may relate to oil temperature dynamics:\n'
+        prompt += f'These covariates capture market supply-demand drivers and may relate to price dynamics:\n'
         prompt += '\n'.join(cov_meanings_list)
         prompt += f'\n\nHistorical data of covariates for the past {look_back} recorded hours:\n'
         prompt += covariate_data.to_string(index=False)
@@ -690,20 +675,20 @@ def ETTh_main_one_shot_reasoning_see(
     """
     
 
-    os.makedirs(f'Memory/cases/origin/ETTh/prompt/{data_name}', exist_ok=True)
-    with open(f'Memory/cases/origin/ETTh/prompt/{data_name}/prompt_{attr}_{data_name}_{look_back}_{pred_window}_{number}.txt', 'w') as f:
+    os.makedirs(f'Memory/cases/origin/EPF/prompt/{data_name}', exist_ok=True)
+    with open(f'Memory/cases/origin/EPF/prompt/{data_name}/prompt_{attr}_{data_name}_{look_back}_{pred_window}_{number}.txt', 'w') as f:
         f.write(prompt)
-    print(f"[Prompt] Saved to Memory/cases/origin/ETTh/prompt/{data_name}/prompt_{attr}_{data_name}_{look_back}_{pred_window}_{number}.txt", flush=True)
+    print(f"[Prompt] Saved to Memory/cases/origin/EPF/prompt/{data_name}/prompt_{attr}_{data_name}_{look_back}_{pred_window}_{number}.txt", flush=True)
     # print(f"[Prompt] Length: {len(prompt)} chars, {prompt.count('\\n')+1} lines, ~{max(1, len(prompt)//4)} tokens (rough estimate)", flush=True)
 
     # model=deepseek_api_output(api_key=api_key,temperature=temperature,top_p=top_p)
     model=deepseek_api_output(api_key=api_key,temperature=temperature,top_p=top_p)
 
     answer=[]
-    os.makedirs(f'Memory/cases/origin/ETTh/{data_name}', exist_ok=True)
+    os.makedirs(f'Memory/cases/origin/EPF/{data_name}', exist_ok=True)
 
-    if os.path.exists(f'Memory/cases/origin/ETTh/{data_name}/result_{attr}_{data_name}_{look_back}_{pred_window}_{number}.json'):
-        with open(f'Memory/cases/origin/ETTh/{data_name}/result_{attr}_{data_name}_{look_back}_{pred_window}_{number}.json', 'r') as f:
+    if os.path.exists(f'Memory/cases/origin/EPF/{data_name}/result_{attr}_{data_name}_{look_back}_{pred_window}_{number}.json'):
+        with open(f'Memory/cases/origin/EPF/{data_name}/result_{attr}_{data_name}_{look_back}_{pred_window}_{number}.json', 'r') as f:
                 answer=json.load(f)
         if len(answer)==1:
             print('This task has been done!')
@@ -740,7 +725,7 @@ def ETTh_main_one_shot_reasoning_see(
             
             answer.append({'index':k,'reasoning':reasoning,'answer':result})
 
-            with open(f'Memory/cases/origin/ETTh/{data_name}/result_{attr}_{data_name}_{look_back}_{pred_window}_{number}.json', 'w') as f:    
+            with open(f'Memory/cases/origin/EPF/{data_name}/result_{attr}_{data_name}_{look_back}_{pred_window}_{number}.json', 'w') as f:    
                 json.dump(answer, f,indent=4)
 
     print('All done!')

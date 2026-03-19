@@ -89,6 +89,34 @@ sh scripts/short_term/NP.sh
 ```
 sh scripts/long_term/ETTh.sh
 ```
+
+### 7. Evaluation
+
+After running forecasting, evaluate prediction quality using the uqmem scoring pipeline (LLM + heuristic trajectory selection):
+
+**Short-term (EPF / NP, look_back=168, pred_window=24):**
+```bash
+bash scripts/evaluate/EPF.sh
+```
+
+**Long-term (ETTh1, look_back=96, pred_window=96):**
+```bash
+bash scripts/evaluate/ETTh.sh
+```
+
+Or run the evaluation scripts directly:
+```bash
+# EPF
+python evaluate/EPF/evaluate_EPF_uqmem.py
+
+# ETTh
+python evaluate/ETTh/evaluate_ETT_uqmem.py
+```
+
+The evaluation reports **MSE** and **MAE** metrics for each attribute and prints a per-sample summary.
+
+---
+
 ## 📊 Benchmark Results
 **Full Results:**
 ![table1](assets/1-main-results.png)

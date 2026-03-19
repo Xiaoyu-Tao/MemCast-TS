@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(pip show:*)",
+      "Bash(bash:*)",
+      "Bash(xargs file:*)",
+      "Bash(PYTHONPATH=. python:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(python3:*)"
+    ]
+  }
+}
