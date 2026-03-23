@@ -1,33 +1,45 @@
+# filename: run_etth1_batch.py
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from main.EPF.EPF_main_one_shot_reasoning_reflection import EPF_main_one_shot_reasoning_reflection
-from main.EPF.EPF_main_one_shot_reasoning_see import EPF_main_one_shot_reasoning_see
+from main.EPF.EPF_main_one_shot_reasoning import EPF_main_one_shot_reasoning_see
 from tqdm import tqdm
+
+import pandas as pd
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 data_name = 'NP'
 look_back, pred_window = 168, 24
-max_workers = 10
+api_key = os.getenv("OPENAI_API_KEY")
+max_workers = 5    # 并发线程数
 
 def run_task(i, attr):
+    # 可选：打印开始/结束（并发多时建议只用进度条）
+    # print(f"Start: {attr}-{i}")
     EPF_main_one_shot_reasoning_see(
-        data_name, attr, look_back, pred_window, i,
+        data_name, attr, look_back, pred_window, i, api_key=api_key,
         temperature=0.6,
         top_p=0.7
     )
+    # print(f"Done:  {attr}-{i}")
 
 if __name__ == "__main__":
     attrs = ['OT']
-    tasks = [(i, attr) for i in range(30) for attr in attrs]
+    num_samples = 30
+    tasks = [(i, attr) for attr in attrs for i in range(num_samples)]
 
     errors = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(run_task, *p) for p in tasks]
+        # 使用 as_completed + tqdm 显示整体进度
         for fut in tqdm(as_completed(futures), total=len(futures),
-                        desc="EFP jobs with image", ncols=100):
+                        desc="EFP jobs", ncols=100):
             try:
-                fut.result()
+                fut.result()  # 取结果并抛出异常（若有）
             except Exception as e:
                 errors.append(str(e))
 
+    # 执行完的简要汇总
     done_cnt = len(futures) - len(errors)
     print(f"\n✅ finished: {done_cnt}/{len(futures)}")
     if errors:

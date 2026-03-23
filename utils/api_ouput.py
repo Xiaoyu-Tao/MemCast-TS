@@ -8,7 +8,7 @@ from typing import Optional, Union, List
 class deepseek_api_output(nn.Module):
     def __init__(self,api_key='',temperature=0.6,top_p=0.7):
         super(deepseek_api_output, self).__init__()
-        self.client = OpenAI(base_url="https://api2.aigcbest.top/v1",api_key=api_key)
+        self.client = OpenAI(base_url=os.getenv("OPENAI_BASE_URL", "https://api2.aigcbest.top/v1"),api_key=api_key)
         self.temperature = temperature
         self.top_p = top_p
     
@@ -29,7 +29,7 @@ class gpt4_api_output(nn.Module):
     def __init__(self, api_key='', temperature=0.6, top_p=0.7):
         super(gpt4_api_output, self).__init__()
         self.client = OpenAI(
-            base_url="https://api2.aigcbest.top/v1",
+            base_url=os.getenv("OPENAI_BASE_URL", "https://api2.aigcbest.top/v1"),
             api_key=api_key
         )
         self.temperature = temperature
@@ -55,7 +55,7 @@ class gpt4_api_output(nn.Module):
 class deepseek_multimodal_api_output(nn.Module):
     def __init__(self, api_key='', temperature=0.6, top_p=0.7):
         super(deepseek_multimodal_api_output, self).__init__()
-        self.client = OpenAI(base_url="https://api2.aigcbest.top/v1", api_key=api_key)
+        self.client = OpenAI(base_url=os.getenv("OPENAI_BASE_URL", "https://api2.aigcbest.top/v1"), api_key=api_key)
         self.temperature = temperature
         self.top_p = top_p
     

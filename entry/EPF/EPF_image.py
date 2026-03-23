@@ -1,27 +1,42 @@
+# filename: run_etth1_batch.py
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from main.EPF.EPF_main_vison_to_text import EPF_main_vison_to_text
 from tqdm import tqdm
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 data_name = 'NP'
 look_back, pred_window = 168, 24
-max_workers = 5
+api_key = os.getenv("OPENAI_API_KEY")
+max_workers = 20    # 并发线程数
 
-def run_task(i, attr):
+def run_task(global_idx, attr, mode):
     EPF_main_vison_to_text(
-        data_name, attr, look_back, pred_window, i,
+        data_name, attr, look_back, pred_window, global_idx, api_key=api_key,
         temperature=0.6,
-        top_p=0.7
+        top_p=0.7,
+        mode=mode
     )
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description='EPF vision-to-text batch runner')
+    parser.add_argument('--mode', choices=['memory', 'test'], default='memory',
+                        help="'memory': last N training samples; 'test': first N test samples")
+    args = parser.parse_args()
+
     attrs = ['OT']
-    tasks = [(i, attr) for i in range(30) for attr in attrs]
+    num_samples = 30
+    global_indices = list(range(num_samples))
+
+    tasks = [(g, attr, args.mode) for attr in attrs for g in global_indices]
 
     errors = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(run_task, *p) for p in tasks]
         for fut in tqdm(as_completed(futures), total=len(futures),
-                        desc="EFP jobs", ncols=100):
+                        desc=f"EPF {args.mode} jobs", ncols=100):
             try:
                 fut.result()
             except Exception as e:
