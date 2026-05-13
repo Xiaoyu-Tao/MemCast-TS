@@ -1,5 +1,5 @@
 <div align="center">
-  <h1><img src="assets/image.png" alt="MemCast logo" style="height: 1em; width: auto; vertical-align: -0.15em; margin-right: 0.4em;">MemCast: Memory-Driven Time Series Forecasting with Experience-Conditioned Reasoning</h1> 
+  <h1><img src="assets/image.png" alt="MemCast logo" style="height: 1em; width: auto; vertical-align: -0.15em; margin-right: 0.4em;">MemCast: Memory-Driven Time Series Forecasting with Experience-Conditioned Reasoning (ICML2026, Accepted)</h1> 
   <a href="./LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   </a>
